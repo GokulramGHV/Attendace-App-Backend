@@ -15,7 +15,27 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from rest_framework.routers import SimpleRouter
+from api.views import *
+from rest_framework.authtoken.views import obtain_auth_token
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view as swagger_get_schema_view
+
+
+schema_view = swagger_get_schema_view(
+    openapi.Info(
+        title="Attendance API",
+        default_version='1.0.0',
+        description="API documentation of the Attendance App",
+    ),
+    public=True,
+)
+
+router = SimpleRouter()
+router.register('api/course', CourseViewSet)
 
 urlpatterns = [
+    path('auth/', obtain_auth_token),
     path('admin/', admin.site.urls),
-]
+    path('swagger/schema/', schema_view.with_ui('swagger', cache_timeout=0), name="swagger-schema"),
+] + router.urls

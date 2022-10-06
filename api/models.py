@@ -19,6 +19,8 @@ class Course(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
+    def __str__(self):
+        return f"{self.name}"
 
 class Student(models.Model):
     name = models.CharField(max_length=150)
@@ -28,7 +30,9 @@ class Student(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     attendance_percentage = models.DecimalField(max_digits=3, decimal_places=2)
     course_enrolled = models.ForeignKey(Course, on_delete=models.CASCADE)
-
+    
+    def __str__(self):
+        return f"{self.name}"
 
 class Attendance(models.Model):
     session = models.DateTimeField()
