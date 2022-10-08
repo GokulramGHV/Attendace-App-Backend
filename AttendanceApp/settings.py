@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-_-9%gi#t@(_n2oa0grgop=(7y73vr8!ey1p+xr79-mliny!vs@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -40,8 +40,16 @@ INSTALLED_APPS = [
     'api',
     "rest_framework",
     "rest_framework.authtoken",
-    "drf_yasg"
+    "drf_yasg",
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    "dj_rest_auth",
+    'dj_rest_auth.registration',
+
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -54,6 +62,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'AttendanceApp.urls'
+
 
 TEMPLATES = [
     {

@@ -1,6 +1,7 @@
+from email.policy import default
 from django.db import models
 from django.contrib.auth.models import User
-from django.utils import timezone
+# from django.utils import timezone
 
 DAYS_OF_WEEK = (
     (0, "Monday"),
@@ -28,7 +29,7 @@ class Student(models.Model):
     reg_no = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    attendance_percentage = models.DecimalField(max_digits=3, decimal_places=2)
+    attendance_percentage = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
     course_enrolled = models.ForeignKey(Course, on_delete=models.CASCADE)
     
     def __str__(self):
@@ -51,3 +52,4 @@ class Sessions(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     session = models.DateTimeField()
+
