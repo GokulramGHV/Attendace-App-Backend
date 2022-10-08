@@ -46,3 +46,8 @@ class TimeTable(models.Model):
     day = models.CharField(max_length=1, choices=DAYS_OF_WEEK)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+
+class Sessions(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    session = models.DateTimeField()

@@ -37,5 +37,5 @@ router.register('api/course', CourseViewSet)
 urlpatterns = [
     path('auth/', obtain_auth_token),
     path('admin/', admin.site.urls),
-    path('swagger/schema/', schema_view.with_ui('swagger', cache_timeout=0), name="swagger-schema"),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name="swagger-schema"),
 ] + router.urls
