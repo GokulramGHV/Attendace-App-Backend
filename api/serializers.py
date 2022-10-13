@@ -3,37 +3,61 @@ from django.contrib.auth.models import User
 
 from .models import *
 
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+        fields = ["id", "username", "email", "first_name", "last_name"]
+
 
 class CourseSerializer(serializers.ModelSerializer):
     teacher = UserSerializer(read_only=True)
+
     class Meta:
         model = Course
-        fields = ['id', 'name', 'created_at', 'updated_at', 'teacher']
+        fields = "__all__"
 
-class StudentSerializer(serializers.ModelSerializer):
-    course_enrolled = CourseSerializer(read_only=True)
+
+class StudentReadSerializer(serializers.ModelSerializer):
+    course_enrolled = CourseSerializer()
+
     class Meta:
         model = Student
-        fields = ['id', 'name', 'email', 'reg_no', 'attendance_percentage', 'course_enrolled', 'created_at', 'updated_at']
+        fields = "__all__"
+        read_only_fields = ("id", "created_at", "updated_at")
+
+class StudentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Student
+        fields = "__all__"
+        read_only_fields = ("id", "created_at", "updated_at")
+
 
 class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
-        fields = ['session', 'student', 'course']
+        fields = "__all__"
+        read_only_fields = ("id",)
+
 
 class TimeTableSerializer(serializers.ModelSerializer):
-    teacher = UserSerializer(read_only=True)
     class Meta:
         model = TimeTable
-        fields = ['start_time', 'end_time', 'day', 'course', 'teacher']
+        fields = "__all__"
+        read_only_fields = ("id",)
 
-class SessionsSerializer(serializers.ModelSerializer):
-    course = CourseSerializer(read_only=True)
-    teacher = UserSerializer(read_only=True)
+
+class SessionsReadSerializer(serializers.ModelSerializer):
+    course = CourseSerializer()
+
     class Meta:
         model = Sessions
-        fields = ['course', 'teacher', 'session']
+        fields = "__all__"
+        read_only_fields = ("id",)
+
+
+class SessionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Sessions
+        fields = "__all__"
+        read_only_fields = ("id",)

@@ -20,30 +20,35 @@ from rest_framework.routers import SimpleRouter
 from api.views import *
 from rest_framework.authtoken.views import obtain_auth_token
 from drf_yasg import openapi
-from drf_yasg.views import get_schema_view as swagger_get_schema_view
+from drf_yasg.views import get_schema_view as get_schema_view
 from django.conf.urls import include
 from rest_framework import permissions
 
-schema_view = swagger_get_schema_view(
+schema_view = get_schema_view(
     openapi.Info(
         title="Attendance API",
-        default_version='1.0.0',
+        default_version="1.0.0",
         description="API documentation of the Attendance App",
+        contact=openapi.Contact(email="gokulharividhya@gmail.com"),
+        license=openapi.License(name="MIT License"),
     ),
     public=True,
     permission_classes=[permissions.AllowAny],
 )
 
-router = SimpleRouter()
-router.register('course', CourseViewSet, 'Course')
-router.register('student', StudentViewSet, 'Student')
-router.register('timetable', TimeTableViewSet, 'TimeTable')
-
 urlpatterns = [
-    path('auth-token/', obtain_auth_token),
-    re_path('auth/', include('dj_rest_auth.urls')),
+    path("auth-token/", obtain_auth_token),
+    # re_path(r"^auth/login/$", LoginViewCustom.as_view(), name="rest_login"),
+    re_path("auth/", include("dj_rest_auth.urls")),
     re_path("auth/registration/", include("dj_rest_auth.registration.urls")),
-    path('admin/', admin.site.urls),
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name="swagger-schema"),
-    path('api/', include(router.urls))
-] 
+    path("admin/", admin.site.urls),
+    path(
+        "swagger/",
+        schema_view.with_ui("swagger", cache_timeout=0),
+        name="swagger-schema",
+    ),
+    re_path(
+        r"^redoc/$", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"
+    ),
+    path("", include("AttendanceApp.api_router")),
+]
