@@ -38,10 +38,14 @@ class StudentViewSet(ModelViewSet):
     def get_queryset(self):
         return Student.objects.filter(course_enrolled__teacher=self.request.user)
 
-    def get_serializer_class(self):     # refer https://stackoverflow.com/questions/41312558/django-rest-framework-post-nested-objects
-        if self.request.method in ['GET']:
+    def get_serializer_class(
+        self,
+    ):  # refer https://stackoverflow.com/questions/41312558/django-rest-framework-post-nested-objects
+        if self.request.method in ["GET"]:
             return StudentReadSerializer
         return StudentSerializer
+
+
 class TimeTableViewSet(ModelViewSet):
     queryset = TimeTable.objects.all()
     serializer_class = TimeTableSerializer
@@ -59,7 +63,9 @@ class SessionsViewSet(ModelViewSet):
     def get_queryset(self):
         return Sessions.objects.filter(course__teacher=self.request.user)
 
-    def get_serializer_class(self):     # refer https://stackoverflow.com/questions/41312558/django-rest-framework-post-nested-objects
-        if self.request.method in ['GET']:
+    def get_serializer_class(
+        self,
+    ):  # refer https://stackoverflow.com/questions/41312558/django-rest-framework-post-nested-objects
+        if self.request.method in ["GET"]:
             return SessionsReadSerializer
         return SessionsSerializer
