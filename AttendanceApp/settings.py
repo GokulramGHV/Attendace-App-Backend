@@ -30,6 +30,16 @@ CORS_ALLOW_HEADERS = ["*"]
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = False
 
+# CORS_ORIGIN_WHITELIST = (
+#     "http://localhost:3000",
+#     "http://localhost:8080",
+#     "http://localhost:8000",
+#     "http://0.0.0.0:8080"
+
+# )
+
+# CSRF_TRUSTED_ORIGINS = ["http://localhost:8080"]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,7 +54,6 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "drf_yasg",
-    "django.contrib.sites",
     "allauth",
     "allauth.account",
     "dj_rest_auth",
@@ -54,10 +63,10 @@ INSTALLED_APPS = [
 # SITE_ID = 1
 
 MIDDLEWARE = [
-    "api.middleware.CORSMiddleware",
+    "api.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
+    # "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
