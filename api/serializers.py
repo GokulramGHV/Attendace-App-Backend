@@ -26,6 +26,7 @@ class StudentReadSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ("id", "created_at", "updated_at")
 
+
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
@@ -36,6 +37,15 @@ class StudentSerializer(serializers.ModelSerializer):
 class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
+        fields = "__all__"
+        read_only_fields = ("id",)
+
+
+class TimeTableReadSerializer(serializers.ModelSerializer):
+    course = CourseSerializer()
+
+    class Meta:
+        model = TimeTable
         fields = "__all__"
         read_only_fields = ("id",)
 
@@ -61,3 +71,29 @@ class SessionsSerializer(serializers.ModelSerializer):
         model = Sessions
         fields = "__all__"
         read_only_fields = ("id",)
+
+
+class AttendanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attendance
+        fields = "__all__"
+        read_only_fields = ("id",)
+
+
+class AttendanceReadSerializer(serializers.ModelSerializer):
+    session = SessionsReadSerializer()
+    student = StudentReadSerializer()
+
+    class Meta:
+        model = Attendance
+        fields = "__all__"
+        read_only_fields = ("id",)
+
+
+# class AttendanceBulkSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Attendance
+#         fields = "__all__"
+#         read_only_fields = ("id",)
+    
+    
