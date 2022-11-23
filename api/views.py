@@ -64,7 +64,7 @@ class CourseStudentView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, pk, format=None):
-        students = Student.objects.filter(course_enrolled_id=pk)
+        students = Student.objects.filter(course_enrolled_id=pk).order_by()
         print(len(students))
         serializer = StudentSerializer(students, many=True)
         return Response(serializer.data)
@@ -189,12 +189,6 @@ def waprfile(request, cid, sid):
         else:
             stud_list.append({"name": student.name, "attendance": "P"})
 
-    # for j in range(len(students)):
-    #     for i in range(len(absent_studs)):
-    #         if absent_studs[i].student_id == students[j].id:
-    #             stud_list.append({"name": students[j].name, "attendance": "A"})
-    #         elif students[j].name not in stud_list["name"]:
-    #             stud_list.append({"name": students[j].name, "attendance": "P"})
     print("Students:", students)
     for i in range(len(stud_list)):
         worksheet.cell(row=i + 1, column=1, value=stud_list[i]["name"])
