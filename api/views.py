@@ -8,11 +8,22 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import generics, status
+from django.http import HttpResponse, HttpResponseNotFound
+from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
 
 # from rest_framework.authentication import SessionAuthentication
 from api.authentication import TokenAuthentication
 
+
+from openpyxl import Workbook
+from openpyxl.writer.excel import save_virtual_workbook
+
+
 # Create your views here.
+
+
 # from rest_framework.authentication import TokenAuthentication
 # from dj_rest_auth.registration.views import LoginView
 
@@ -157,3 +168,47 @@ class BulkAttendanceView(generics.ListCreateAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def waprfile(request, cid, sid):
+    workbook = Workbook()
+    worksheet = workbook.active
+    students = Student.objects.filter(course_enrolled_id=cid)
+    absent_studs = Attendance.objects.filter(session=sid)
+    stud_list = []
+    print(absent_studs)
+    ab_lst = []
+    for stud in absent_studs:
+        ab_lst.append(stud.student_id)
+
+    for student in students:
+        if student.id in ab_lst:
+            stud_list.append({"name": student.name, "attendance": "A"})
+        else:
+            stud_list.append({"name": student.name, "attendance": "P"})
+
+    # for j in range(len(students)):
+    #     for i in range(len(absent_studs)):
+    #         if absent_studs[i].student_id == students[j].id:
+    #             stud_list.append({"name": students[j].name, "attendance": "A"})
+    #         elif students[j].name not in stud_list["name"]:
+    #             stud_list.append({"name": students[j].name, "attendance": "P"})
+    print("Students:", students)
+    for i in range(len(stud_list)):
+        worksheet.cell(row=i + 1, column=1, value=stud_list[i]["name"])
+        worksheet.cell(row=i + 1, column=2, value=stud_list[i]["attendance"])
+
+    # worksheet["A1"] = f"Session {}"
+    # worksheet["B1"] = "world!"
+    response = HttpResponse(
+        save_virtual_workbook(workbook),
+        # content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "Content-Disposition": 'attachment; filename="foo.xlsx"',
+        },
+    )
+    # response["Content-Disposition"] = "attachment; filename=myexport.xlsx"
+    return response
