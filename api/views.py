@@ -50,7 +50,9 @@ class StudentViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return Student.objects.filter(course_enrolled__teacher=self.request.user)
+        return Student.objects.filter(
+            course_enrolled__teacher=self.request.user
+        ).order_by("reg_no")
 
     def get_serializer_class(
         self,
@@ -64,7 +66,7 @@ class CourseStudentView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, pk, format=None):
-        students = Student.objects.filter(course_enrolled_id=pk).order_by()
+        students = Student.objects.filter(course_enrolled_id=pk).order_by("reg_no")
         print(len(students))
         serializer = StudentSerializer(students, many=True)
         return Response(serializer.data)
@@ -76,7 +78,9 @@ class TimeTableViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return TimeTable.objects.filter(course__teacher=self.request.user)
+        return TimeTable.objects.filter(course__teacher=self.request.user).order_by(
+            "start_time"
+        )
 
     def get_serializer_class(
         self,
@@ -117,7 +121,9 @@ class AttendanceViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return Attendance.objects.filter(session__course__teacher=self.request.user)
+        return Attendance.objects.filter(
+            session__course__teacher=self.request.user
+        ).order_by("student__reg_no")
 
     def get_serializer_class(
         self,
@@ -131,7 +137,9 @@ class SessionAttendanceView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, pk, format=None):
-        attendance = Attendance.objects.filter(session_id=pk)
+        attendance = Attendance.objects.filter(session_id=pk).order_by(
+            "student__reg_no"
+        )
         serializer = AttendanceReadSerializer(attendance, many=True)
         return Response(serializer.data)
 
@@ -149,7 +157,7 @@ class BulkAttendanceView(generics.ListCreateAPIView):
             student_ids.append(student["student"])
         all_students = Student.objects.filter(
             course_enrolled__teacher=self.request.user
-        )
+        ).order_by("reg_no")
         for student in all_students:
             percent = student.attendance_percentage
             total_sessions = (
@@ -175,8 +183,8 @@ class BulkAttendanceView(generics.ListCreateAPIView):
 def waprfile(request, cid, sid):
     workbook = Workbook()
     worksheet = workbook.active
-    students = Student.objects.filter(course_enrolled_id=cid)
-    absent_studs = Attendance.objects.filter(session=sid)
+    students = Student.objects.filter(course_enrolled_id=cid).order_by("reg_no")
+    absent_studs = Attendance.objects.filter(session=sid).order_by("student__reg_no")
     stud_list = []
     print(absent_studs)
     ab_lst = []
@@ -185,14 +193,19 @@ def waprfile(request, cid, sid):
 
     for student in students:
         if student.id in ab_lst:
-            stud_list.append({"name": student.name, "attendance": "A"})
+            stud_list.append(
+                {"name": student.name, "attendance": "A", "reg_no": student.reg_no}
+            )
         else:
-            stud_list.append({"name": student.name, "attendance": "P"})
+            stud_list.append(
+                {"name": student.name, "attendance": "P", "reg_no": student.reg_no}
+            )
 
     print("Students:", students)
     for i in range(len(stud_list)):
-        worksheet.cell(row=i + 1, column=1, value=stud_list[i]["name"])
-        worksheet.cell(row=i + 1, column=2, value=stud_list[i]["attendance"])
+        worksheet.cell(row=i + 1, column=1, value=stud_list[i]["reg_no"])
+        worksheet.cell(row=i + 1, column=2, value=stud_list[i]["name"])
+        worksheet.cell(row=i + 1, column=3, value=stud_list[i]["attendance"])
 
     # worksheet["A1"] = f"Session {}"
     # worksheet["B1"] = "world!"
@@ -206,3 +219,6 @@ def waprfile(request, cid, sid):
     )
     # response["Content-Disposition"] = "attachment; filename=myexport.xlsx"
     return response
+
+
+# def all_sessions_attendance(request, cid):
