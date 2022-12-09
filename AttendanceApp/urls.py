@@ -53,4 +53,5 @@ urlpatterns = [
     path("", include("AttendanceApp.api_router")),
     path("bulkAttendance/", BulkAttendanceView.as_view()),
     path("filetest/<int:cid>/<int:sid>/", waprfile),
+    path("all_sessions_attendance/<int:cid>/", all_sessions_attendance),
 ]

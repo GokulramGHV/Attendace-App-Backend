@@ -22,6 +22,7 @@ class Course(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    block_hours = models.IntegerField(default=1)
 
     def __str__(self):
         return f"{self.name}"
@@ -45,6 +46,7 @@ class Student(models.Model):
 class Sessions(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     session = models.DateTimeField()
+    block_hours = models.IntegerField(default=1)
     # teacher = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
 

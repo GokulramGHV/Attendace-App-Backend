@@ -20,6 +20,7 @@ from api.authentication import TokenAuthentication
 from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
+from datetime import datetime
 
 # Create your views here.
 
@@ -186,6 +187,7 @@ def waprfile(request, cid, sid):
     students = Student.objects.filter(course_enrolled_id=cid).order_by("reg_no")
     absent_studs = Attendance.objects.filter(session=sid).order_by("student__reg_no")
     stud_list = []
+    session_data = Sessions.objects.get(id=sid)
     print(absent_studs)
     ab_lst = []
     for stud in absent_studs:
@@ -194,11 +196,15 @@ def waprfile(request, cid, sid):
     for student in students:
         if student.id in ab_lst:
             stud_list.append(
-                {"name": student.name, "attendance": "A", "reg_no": student.reg_no}
+                {"name": student.name, "attendance": "A(0)", "reg_no": student.reg_no}
             )
         else:
             stud_list.append(
-                {"name": student.name, "attendance": "P", "reg_no": student.reg_no}
+                {
+                    "name": student.name,
+                    "attendance": f"P({session_data.block_hours})",
+                    "reg_no": student.reg_no,
+                }
             )
 
     print("Students:", students)
@@ -221,4 +227,81 @@ def waprfile(request, cid, sid):
     return response
 
 
-# def all_sessions_attendance(request, cid):
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def all_sessions_attendance(request, cid):
+    workbook = Workbook()
+    worksheet = workbook.active
+
+    students = Student.objects.filter(course_enrolled_id=cid).order_by("reg_no")
+    sessions = Sessions.objects.filter(course=cid)
+    no_of_sessions = len(sessions)
+
+    total_hours = 0
+    for sess in sessions:
+        total_hours += sess.block_hours
+
+    worksheet.cell(row=1, column=1, value="Reg No.")
+    worksheet.cell(row=1, column=2, value="Name")
+    worksheet.cell(row=1, column=no_of_sessions + 3, value="Attended Hours")
+    worksheet.cell(row=1, column=no_of_sessions + 4, value="Total Hours")
+
+    for i in range(1, len(students) + 1):
+        worksheet.cell(row=i + 1, column=1, value=students[i - 1].reg_no)
+        worksheet.cell(row=i + 1, column=2, value=students[i - 1].name)
+        worksheet.cell(row=i + 1, column=no_of_sessions + 4, value=total_hours)
+
+    init_row = 2
+    init_col = 3
+
+    attendance_dict = {}
+    for student in students:
+        attendance_dict[student.id] = 0
+
+    for session in sessions:
+        absent_studs = Attendance.objects.filter(session=session.id).order_by(
+            "student__reg_no"
+        )
+        worksheet.cell(
+            row=1,
+            column=init_col,
+            value=datetime.fromisoformat(str(session.session)).strftime(
+                "%m-%d-%Y %H:%M:%S"
+            ),
+        )
+
+        ab_lst = []
+        for stud in absent_studs:
+            ab_lst.append(stud.student_id)
+
+        for student in students:
+            if student.id in ab_lst:
+                worksheet.cell(row=init_row, column=init_col, value="A(0)")
+            else:
+                worksheet.cell(
+                    row=init_row,
+                    column=init_col,
+                    value=f"P({session.block_hours})",
+                )
+                attendance_dict[student.id] += session.block_hours
+            init_row += 1
+        init_col += 1
+        init_row = 2
+
+    init_row = 2
+    for stud_id in attendance_dict:
+        worksheet.cell(
+            row=init_row,
+            column=no_of_sessions + 3,
+            value=attendance_dict[stud_id],
+        )
+        init_row += 1
+
+    response = HttpResponse(
+        save_virtual_workbook(workbook),
+        headers={
+            "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "Content-Disposition": 'attachment; filename="foo.xlsx"',
+        },
+    )
+    return response
