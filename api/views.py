@@ -1,6 +1,12 @@
+import smtplib
+from email.message import EmailMessage
+import ssl
+import json
+
 from pyexpat import model
 from statistics import mode
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.viewsets import ModelViewSet
 from api.serializers import *
 from api.models import *
@@ -8,7 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import generics, status
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
@@ -305,3 +311,33 @@ def all_sessions_attendance(request, cid):
         },
     )
     return response
+
+@csrf_exempt 
+def sendemail(request):
+    if request.method == 'POST':
+        course_id = json.loads(request.body.decode('utf-8'))['courseId']
+        course = Course.objects.get(pk=course_id)
+        selected = Student.objects.filter(attendance_percentage__lt=0.75, course_enrolled=course)
+        recvs = [stu.email for stu in selected]
+        print(recvs)
+
+        email_sender = 'rollingrocky360@gmail.com'
+        email_password = '<InsertPasswordHere>'
+        email_receiver = recvs
+
+        subject = 'Low Attendance'
+        body = 'Your attendance is less than 75%'
+
+        em = EmailMessage()
+        em['From'] = email_sender
+        em['To'] = email_receiver
+        em['Subject'] = subject
+        em.set_content(body)
+
+        context = ssl.create_default_context()
+
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+            smtp.login(email_sender, email_password)
+            smtp.sendmail(email_sender, email_receiver, em.as_string())
+
+        return JsonResponse({'status': 'ok'})

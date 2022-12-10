@@ -38,7 +38,7 @@ CORS_ALLOW_CREDENTIALS = False
 
 # )
 
-# CSRF_TRUSTED_ORIGINS = ["http://localhost:8080"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:8080"]
 
 # Application definition
 
