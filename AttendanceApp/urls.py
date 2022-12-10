@@ -51,7 +51,9 @@ urlpatterns = [
         r"^redoc/$", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"
     ),
     path("", include("AttendanceApp.api_router")),
-    path("bulkAttendance/", BulkAttendanceView.as_view()),
+    path(
+        "bulkAttendance/<int:course_id>/<int:session_id>/", BulkAttendanceView.as_view()
+    ),
     path("filetest/<int:cid>/<int:sid>/", waprfile),
     path("all_sessions_attendance/<int:cid>/", all_sessions_attendance),
 ]

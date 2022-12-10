@@ -150,25 +150,30 @@ class BulkAttendanceView(generics.ListCreateAPIView):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
 
-    def create(self, request, *args, **kwargs):
+    def create(self, request, course_id, session_id, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, many=True)
         student_data = request.data
         student_ids = []
         for student in student_data:
             student_ids.append(student["student"])
-        all_students = Student.objects.filter(
-            course_enrolled__teacher=self.request.user
-        ).order_by("reg_no")
+        all_students = Student.objects.filter(course_enrolled=course_id).order_by(
+            "reg_no"
+        )
+
+        sessions = Sessions.objects.filter(course=course_id)
+        total_hours = 0
+        for sess in sessions:
+            total_hours += sess.block_hours
+
+        print("Total Hours: ", total_hours)
         for student in all_students:
             percent = student.attendance_percentage
-            total_sessions = (
-                len(Sessions.objects.filter(course__teacher=self.request.user)) - 1
-            )
-            # if total_sessions != 0:
-            attended_sessions = total_sessions * percent
+            session = Sessions.objects.get(id=session_id)
+            attended_hours = (total_hours - session.block_hours) * percent
             if student.id not in student_ids:
-                attended_sessions += 1
-            student.attendance_percentage = attended_sessions / (total_sessions + 1)
+                attended_hours += session.block_hours
+            print(student.name, attended_hours)
+            student.attendance_percentage = attended_hours / total_hours
             student.save()
 
         serializer.is_valid(raise_exception=True)
